@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommitAI - AI Git Commit Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen py-10 px-4">
+
+    <div class="w-full max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">Commit<span class="text-purple-400">AI</span></h1>
+            <p class="text-gray-400">Paste your git diff and get a perfect commit message instantly</p>
+        </div>
+
+        <!-- Style Selector -->
+        <div class="flex gap-2 mb-4 flex-wrap">
+            <button onclick="setStyle('conventional')" id="btn-conventional"
+                class="style-btn px-4 py-2 rounded-full text-sm font-medium bg-purple-600 text-white">
+                Conventional
+            </button>
+            <button onclick="setStyle('emoji')" id="btn-emoji"
+                class="style-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-800 text-gray-300">
+                Emoji
+            </button>
+            <button onclick="setStyle('detailed')" id="btn-detailed"
+                class="style-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-800 text-gray-300">
+                Detailed
+            </button>
+            <button onclick="setStyle('simple')" id="btn-simple"
+                class="style-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-800 text-gray-300">
+                Simple
+            </button>
+        </div>
+
+        <!-- Input -->
+        <textarea id="diff-input"
+            class="w-full h-48 bg-gray-900 border border-gray-700 rounded-xl p-4 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
+            placeholder="Paste your git diff here..."></textarea>
+
+        <!-- Generate Button -->
+        <button onclick="generate()"
+            class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition duration-200">
+            ✨ Generate Commit Message
+        </button>
+
+        <!-- Output -->
+        <div id="output-box" class="hidden mt-6 bg-gray-900 border border-gray-700 rounded-xl p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-400">Generated Message</span>
+                <button onclick="copyMessage()"
+                    class="text-sm text-purple-400 hover:text-purple-300">Copy</button>
+            </div>
+            <p id="output-text" class="text-white font-mono text-sm whitespace-pre-wrap"></p>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="hidden mt-6 text-center text-gray-400 text-sm">
+            ⏳ Generating commit message...
+        </div>
+
+        <p class="text-center text-gray-600 text-xs mt-8">Free · No signup · Powered by Groq AI</p>
+    </div>
+
+    <script>
+        let selectedStyle = 'conventional';
+
+        function setStyle(style) {
+            selectedStyle = style;
+            document.querySelectorAll('.style-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white');
+                btn.classList.add('bg-gray-800', 'text-gray-300');
+            });
+            document.getElementById('btn-' + style).classList.remove('bg-gray-800', 'text-gray-300');
+            document.getElementById('btn-' + style).classList.add('bg-purple-600', 'text-white');
+        }
+
+        async function generate() {
+            const diff = document.getElementById('diff-input').value.trim();
+            if (!diff) {
+                alert('Please paste your git diff first!');
+                return;
+            }
+
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('output-box').classList.add('hidden');
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ diff: diff, style: selectedStyle })
+                });
+
+                const data = await response.json();
+                document.getElementById('output-text').textContent = data.message;
+                document.getElementById('output-box').classList.remove('hidden');
+            } catch (error) {
+                alert('Something went wrong. Please try again.');
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        function copyMessage() {
+            const text = document.getElementById('output-text').textContent;
+            navigator.clipboard.writeText(text);
+            alert('Copied to clipboard!');
+        }
+    </script>
+
+</body>
+</html>
