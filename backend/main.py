@@ -19,8 +19,6 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-
 class DiffRequest(BaseModel):
     diff: str
     style: str = "conventional"
@@ -32,6 +30,8 @@ def root():
 
 @app.post("/generate")
 def generate_commit(request: DiffRequest):
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
     style_prompts = {
         "conventional": "Write a conventional commit message (e.g. feat: add login page). Only return the commit message, nothing else.",
         "emoji": "Write a commit message with a relevant emoji at the start (e.g. ✨ add login page). Only return the commit message, nothing else.",
