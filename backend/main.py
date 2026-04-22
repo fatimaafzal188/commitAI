@@ -28,6 +28,11 @@ def root():
     from fastapi.responses import FileResponse
     return FileResponse("static/index.html")
 
+@app.get("/test-env")
+def test_env():
+    key = os.getenv("GROQ_API_KEY")
+    return {"key_exists": key is not None, "key_prefix": key[:8] if key else "MISSING"}
+
 @app.post("/generate")
 def generate_commit(request: DiffRequest):
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
